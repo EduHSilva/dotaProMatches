@@ -1,0 +1,4 @@
+data/
+mongo/
+.vscode/
+.env

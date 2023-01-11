@@ -1,0 +1,20 @@
+version: '3'
+services: 
+  mongo:
+    container_name: "mongo-dota"
+    image: mongo:3
+    restart: always
+    volumes:
+    - ./data:/data/db
+    ports:
+    - "27017:27017"
+  mariadb:
+    container_name: "maria-dota"
+    image: mariadb
+    restart: unless-stopped
+    volumes:
+    - ./data/mariadb:/var/lib/mysql
+    environment:
+    - MYSQL_ROOT_PASSWORD=edu
+    ports:
+    - "3306:3306"
