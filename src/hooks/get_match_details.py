@@ -6,16 +6,22 @@ from pymongo.collection import Collection
 from pymongo.database import Database
 from tqdm import tqdm
 import time, datetime
+import json
 
-def get_data(match_id) -> list:
-    url:str = f"https://api.opendota.com/api/matches/{match_id}"
-    data = requests.get(url).json()
+def get_data(match_id) -> list | None:
+    try:
+        url:str = f"https://api.opendota.com/api/matches/{match_id}"
+        response = requests.get(url)
+        data = response.json()
+    except json.JSONDecodeError as err:
+        print(err)
+        return None
     return data
 
 def save_data(data, db_collection):
     try:
         db_collection.delete_one({"match_id":data["match_id"]})
-        db_collection.insert(data)
+        db_collection.insert_one(data)
         return True
     except KeyError:
         return False
@@ -35,6 +41,10 @@ def main():
     mongodb_database: Database = mongodb_client["dota_raw"]
     for match_id in tqdm(find_matches_ids(mongodb_database)):
         data = get_data(match_id)
+
+        if data is None:
+            continue
+
         if(save_data(data, mongodb_database["pro_match_details"])):
             time.sleep(1)
         else:
