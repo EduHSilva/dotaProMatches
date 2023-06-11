@@ -17,7 +17,6 @@ def parse_match(match_data):
 def parse_player(player_data):
     columns = ["match_id", "player_slot", "account_id", "assists", "deaths", "denies", "firstblood_claimed",
                 "gold", "gold_per_min", "gold_spent", "hero_damage", "hero_healing", "hero_id", "last_hits", "level",
-                #"max_hero_hit",
                 "pred_vict", "roshans_killed", "tower_damage", "towers_killed", "xp_per_min",
                 "personaname", "name", "radiant_win", "start_time", "duration", "patch", "region", "win", "total_gold", "total_xp", 
                 "kills_per_min", "kda", "neutral_kills", "game_mode", "tower_kills", "courier_kills", "lane_kills", "hero_kills", "observer_kills",
