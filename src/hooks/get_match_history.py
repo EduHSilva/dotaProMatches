@@ -8,32 +8,34 @@ import time, datetime
 import argparse
 
 
-def get_matches_batch(min_match_id: int|None=None) -> list:
-    '''
+def get_matches_batch(min_match_id: int | None = None) -> list:
+    """
         Captura lista de partidas pro players.
         Passando id de partida, a coleta é realizada a partir desta.
-    '''
+    """
 
-    url:str = "https://api.opendota.com/api/proMatches"
+    url: str = "https://api.opendota.com/api/proMatches"
     if min_match_id is not None:
         url += f"?less_than_match_id={min_match_id}"
 
-    data:list = requests.get(url).json()
+    data: list = requests.get(url).json()
     return data
 
-def save_matches(data:list, db_collection: Collection) -> bool:
-    '''
+
+def save_matches(data: list, db_collection: Collection) -> bool:
+    """
     Salva lista de partidas no banco de dados
-    '''
+    """
     for d in data:
         db_collection.delete_one({"match_id": d["match_id"]})
         db_collection.insert_one(d)
     return True
 
+
 def get_and_save(db_collection, min_match_id=None, max_match_id=None):
     data_raw: list = get_matches_batch(min_match_id)
 
-    data = [ i for i in data_raw if "match_id" in i]
+    data = [i for i in data_raw if "match_id" in i]
 
     if max_match_id is not None:
         data = [i for i in data if i["match_id"] > max_match_id]
@@ -48,6 +50,7 @@ def get_and_save(db_collection, min_match_id=None, max_match_id=None):
 
     return True, data
 
+
 def get_oldest_matches(db_collection: Collection) -> None:
     min_match_id_cursor = db_collection.find_one(sort=[("match_id", 1)])
     min_match_id: int | None = None
@@ -56,11 +59,10 @@ def get_oldest_matches(db_collection: Collection) -> None:
     while True:
         check, data = get_and_save(db_collection, min_match_id=min_match_id)
 
-        if not check: 
+        if not check:
             break
         min_match_id = min(i["match_id"] for i in data)
-        
-        
+
 
 def get_newest_matches(db_collection: Collection) -> None:
     max_match_id_cursor = db_collection.find_one(sort=[("match_id", -1)])
@@ -81,7 +83,7 @@ def get_newest_matches(db_collection: Collection) -> None:
     while min_match_id > max_match_id:
         check, data = get_and_save(db_collection, min_match_id=min_match_id)
 
-        if not check: 
+        if not check:
             break
         min_match_id = min(i["match_id"] for i in data)
 
@@ -98,12 +100,13 @@ def main():
 
     mongodb_client: MongoClient = MongoClient(MONGODB_IP, MONGODB_PORT)
     mongodb_database: Database = mongodb_client["dota_raw"]
-    collection : Collection = mongodb_database["pro_match_history"]
+    collection: Collection = mongodb_database["pro_match_history"]
 
     if args.how == "oldest":
         get_oldest_matches(collection)
     elif args.how == "newest":
         get_newest_matches(collection)
+
 
 if __name__ == "__main__":
     main()

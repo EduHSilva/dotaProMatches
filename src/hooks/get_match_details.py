@@ -1,16 +1,16 @@
+import json
+import os
+import time
+
 import requests
 from pymongo import MongoClient
-import os
-import dotenv
-from pymongo.collection import Collection
 from pymongo.database import Database
 from tqdm import tqdm
-import time, datetime
-import json
+
 
 def get_data(match_id) -> list | None:
     try:
-        url:str = f"https://api.opendota.com/api/matches/{match_id}"
+        url: str = f"https://api.opendota.com/api/matches/{match_id}"
         response = requests.get(url)
         data = response.json()
     except json.JSONDecodeError as err:
@@ -18,13 +18,15 @@ def get_data(match_id) -> list | None:
         return None
     return data
 
+
 def save_data(data, db_collection):
     try:
-        db_collection.delete_one({"match_id":data["match_id"]})
+        db_collection.delete_one({"match_id": data["match_id"]})
         db_collection.insert_one(data)
         return True
     except KeyError:
         return False
+
 
 def find_matches_ids(mongo_db_database):
     collection_history = mongo_db_database["pro_match_history"]
@@ -33,6 +35,7 @@ def find_matches_ids(mongo_db_database):
     match_details = set([i["match_id"] for i in collection_details.find({}, {"match_id": 1})])
     match_ids = list(match_history - match_details)
     return match_ids
+
 
 def main():
     MONGODB_IP = os.getenv("MONGODB_IP")
@@ -45,11 +48,12 @@ def main():
         if data is None:
             continue
 
-        if(save_data(data, mongodb_database["pro_match_details"])):
+        if save_data(data, mongodb_database["pro_match_details"]):
             time.sleep(1)
         else:
             print(data)
             time.sleep(60)
+
 
 if __name__ == "__main__":
     main()

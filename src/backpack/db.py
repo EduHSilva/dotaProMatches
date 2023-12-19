@@ -4,10 +4,12 @@ import dotenv
 
 dotenv.load_dotenv(dotenv.find_dotenv())
 
+
 def import_query(path):
     with open(path, "r") as open_file:
         query = open_file.read()
     return query
+
 
 def open_mariadb():
     ip = os.getenv("MARIADB_IP")
